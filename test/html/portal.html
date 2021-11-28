@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <style>
+        html{user-select:none}
+        body{margin:0;}
+
+        .app-title-bar{line-height:2em;background:blue;-webkit-app-region:drag;-webkit-user-drag:none}
+        .item:hover{background:#fff}
+    </style>
+    <script src="/proton.js"></script>
+    <script>
+
+        document.addEventListener("focus", function(e) {
+            console.log(e);
+        });
+
+        
+    </script>
+</head>
+<body>
+
+    <div class="app-title-bar">Proton</div>
+    <div class="item">aaa</div>
+    <div class="item">bbb</div>
+
+
+</body>
+</html>

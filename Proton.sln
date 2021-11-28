@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{9914931E-9539-491A-85E8-A68533EBDAFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proton", "src\Proton.csproj", "{93E9C9FB-1CB2-4618-8943-7B60DF0D2EBB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9914931E-9539-491A-85E8-A68533EBDAFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9914931E-9539-491A-85E8-A68533EBDAFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9914931E-9539-491A-85E8-A68533EBDAFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9914931E-9539-491A-85E8-A68533EBDAFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93E9C9FB-1CB2-4618-8943-7B60DF0D2EBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93E9C9FB-1CB2-4618-8943-7B60DF0D2EBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93E9C9FB-1CB2-4618-8943-7B60DF0D2EBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93E9C9FB-1CB2-4618-8943-7B60DF0D2EBB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F22FF2C-76EA-4344-8088-D47C262C29A7}
+	EndGlobalSection
+EndGlobal

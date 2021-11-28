@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+    <metadata>
+        <id>Proton</id>
+        <version>0.0.1</version>
+        <title>Prton</title>
+        <authors>X High Intell</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <license type="expression">MIT</license>
+        <icon>icon.png</icon>
+        <description>The Proton form is written on the top of WebView2 control that enables you to embed web technologies (HTML, CSS, and JavaScript) in your native applications powered by Microsoft Edge (Chromium).</description>
+        <copyright>$copyright$</copyright>
+        <repository type="git" url="https://github.com/xhighintell/proton.git"/>
+        <projectUrl>https://github.com/xhighintell/proton</projectUrl>
+        <tags>Proton WebView2</tags>
+        <dependencies>
+            <group targetFramework=".NETFramework4.7.2">
+                <dependency id="Microsoft.Web.WebView2" version="1.0.1020.30" include="none" exclude="all" />
+                <dependency id="Newtonsoft.Json" version="13.0.1" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    
+    <files>    
+        <file src="..\nuget\icon.png" />
+        <file src="js\Proton.d.ts" target="content" />
+        <file src="..\References\Intell.dll" target="lib\net472" />
+    </files>
+</package>
