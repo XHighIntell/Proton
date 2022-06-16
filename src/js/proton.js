@@ -1,207 +1,296 @@
-﻿
+﻿'use strict';
 
-
-window.proton = function() {
-    /** @type Proton.Namespace */
-    var proton = {};
+window.proton = function() {    
+    var proton = window.proton; proton = {};
     var webview = chrome.webview;
 
-    
+    // classes
+    proton.EventRegister = function EventRegister(target) {
 
-    /** @type Proton.BrowserWindow.Namespace */
-    var browserWindow = proton.browserWindow = function() {
-        browserWindow = new EventTarget();
+        // 1. If EventRegister is called without the new keyword, recall if with the new keyword
+        // 2. If functions are not added to the prototype, create/add them
+        // 3. 
+
+        // --1--
+        if (this instanceof EventRegister == false) return new EventRegister(target);
+
+        // --2--
+        /** @type proton.EventRegister<(this: {x:123}, name: string)=>void> */
+        var prototype = EventRegister.prototype;
+
+        if (prototype.addListener == null) {
+            prototype.addListener = function(callback) {
+                if (typeof (callback) != 'function') throw new Error('The callback must be function.');
+
+                this.listeners.push(callback);
+            }
+            prototype.removeListener = function(callback) {
+                var index = this.listeners.indexOf(callback);
+                if (index == -1) return;
+
+                this.listeners.splice(index, 1);
+            }
+            prototype.dispatch = function() {
+                this.listeners.forEach((callback) => {
+                    callback.apply(this.target, arguments)
+                });
+            }
+            prototype.hasListener = function(callback) { return this.listeners.indexOf(callback) != -1; }
+            prototype.hasListeners = function() { return this.listeners.length > 0; }
+        }
+
+        // --3--
+        /** @type proton.EventRegister<(this: {x:123}, name: string)=>void> */
+        var _this; _this = this;
+        _this.listeners = [];
+        _this.target = target;
+
+    }
+
+    // methods
+    proton.generateId = function() {
+        var r4 = Math.round(Math.random() * 2176782335);
+        return Date.now().toString(36) + ('000000' + r4.toString(36)).slice(-6);
+    }
+    proton.postMessage = function(action, data) { webview.postMessage({ action: action, data: data }); }
+    proton.postMessagePromise = function postMessagePromise(action, data) {
         
+        // 1. If postMessagePromise is called on the first time, create resolves object
+        // 2. Add resolve to storage
+        // 3. post a message with the correct structure. More details at ProtonWebViewMessage.cs.
 
-        // fields
-        const corner_size = 6;
-        const border_size = 2;
-        const resolves = {};
+        // --1--
+        if (postMessagePromise.resolves == null) postMessagePromise.resolves = {};        
+        /** @type {{ [T:string]: ()=>void }} */
+        var resolves = postMessagePromise.resolves;
 
-        // properties
-        var borderStyle = 0;
-        var windowState = 0;
-        var allowResizable = false;
 
-        /** @type defineProperties<Proton.BrowserWindow> */
+        return new Promise(function(resolve, reject) {
+            // --2--
+            var id = proton.generateId();
+            resolves[id] = resolve;
+
+            // --3--
+            webview.postMessage({ action: action, id: id, data: data });
+        })
+    }
+    
+    // events
+    proton.onMessage = new proton.EventRegister();
+
+    // add listeners
+    webview.addEventListener('message', function(e) {
+        /** @type proton.Message */
+        var message = e.data;
+
+        // 1. if action equal "callback", handle features for proton.postMessagePromise
+
+        if (message.action == 'callback') {
+            /** @type {{ [T:string]: ()=>void }} */
+            var resolves = proton.postMessagePromise.resolves;
+            if (resolves == null) return;
+
+            var id = message.id;
+
+            resolves[id] && (resolves[id](message.data), delete resolves[id]);
+            return;
+        }
+
+        proton.onMessage.dispatch(message);
+    });
+
+    // sub-namespace
+    proton.window = function() {
+        var winform = proton.window; winform = {};
+
+        // ======= enums =======
+        winform.FormWindowState = { Normal: 0, Minimized: 1, Maximized: 2 };
+        winform.FormBorderStyle = { None: 0, FixedSingle: 1, Fixed3D: 2, FixedDialog: 3, Sizable: 4, FixedToolWindow: 5, SizableToolWindow: 6 };
+
+        
+        // ===== properties ====
+        var text = "";
+        var windowState = winform.windowState;
+        var borderStyle = winform.borderStyle;
+        var allowResizable = winform.allowResizable;
+
+
+
+        /** @type defineProperties<typeof proton.window> */
         var properties = {
-            windowState: {
-                get: function() { return windowState },
+            text: {
+                get: function() { return text },
                 set: function(newValue) {
-                    if (windowState == newValue) return;
+                    if (typeof newValue != 'string') throw new Error("Value must be string.");
+
+                    text = newValue;
+                    proton.postMessage("window.setText", text);
+                }
+            },
+            borderStyle: {
+                get: function() { return borderStyle; },
+                set: function(newValue) {
+                    if (typeof newValue != 'number') throw new Error("Value must be number.")
+
+                    borderStyle = newValue;
+                    proton.postMessage("window.setBorderStyle", borderStyle);
+                },
+            },
+            windowState: {
+                get: function() { return windowState; },
+                set: function(newValue) {
+                    if (typeof newValue != 'number') throw new Error("Value must be number.")
 
                     windowState = newValue;
+                    proton.postMessage("window.setWindowState", windowState);
+                }
+            },
+            allowResizable: {
+                get: function() { return allowResizable },
+                set: function(newValue) {
+                    if (typeof newValue != 'boolean') throw new Error("Value must be boolean.")
 
-                    messenger.setWindowState(windowState);
+                    allowResizable = newValue;
+                    proton.postMessage("window.setAllowResizable", allowResizable);
                 }
             }
-        };
-        Object.defineProperties(browserWindow, properties);
-
-        /** @type Proton.BrowserWindow.Messenger */
-        var messenger = browserWindow.messenger = new function() {
-            messenger = this;
-
-            messenger.getAll = function() { return browserWindow.postMessagePromise({ action: 'browserWindow.getAll' }); }
-            messenger.drag = function() { browserWindow.postMessage({ action: 'browserWindow.drag' }) };
-            messenger.startResize = function(hittest) { browserWindow.postMessage({ action: "browserWindow.startResize", hit: hittest }) }
-            messenger.setCaptionRectangle = function(rect) { browserWindow.postMessage({ action: "browserWindow.setCaptionRectangle", rect: rect }) }
-            messenger.openContextMenu = function() { browserWindow.postMessage({ action: "browserWindow.openContextMenu" }); }
-            messenger.setWindowState = function(windowState) { browserWindow.postMessage({ action: "browserWindow.setWindowState", value: windowState }) }
-            messenger.releaseCapture = function() { browserWindow.postMessage({ action: 'browserWindow.releaseCapture' }) }
         }
+        Object.defineProperties(winform, properties);
 
-
-       
         // methods
-        browserWindow.generateId = function() {
-            var r4 = Math.round(Math.random() * 2176782335);
-            return Date.now().toString(36) + ('000000' + r4.toString(36)).slice(-6);
-        }
-        browserWindow.maximize = function() { this.windowState = 2 }
-        browserWindow.minimize = function() { this.windowState = 1 }
-        browserWindow.hitTest = function(x, y) {
 
-            if (windowState == 2) return 1;
+        // ======= events ========
+        winform.onWindowStateChange = new proton.EventRegister(winform);
 
-            if (x <= corner_size && y <= corner_size) return 13; // HT_TOPLEFT
-            else if (x <= corner_size && y >= window.innerHeight - corner_size - 1) return 16; // HT_BOTTOMLEFT
-            else if (x >= window.innerWidth - corner_size - 1 && y <= corner_size) return 14; // HT_TOPRIGHT
-            else if (x >= window.innerWidth - corner_size - 1 && y >= window.innerHeight - corner_size - 1) return 17; // HT_BOTTOMRIGHT
-            else if (x <= border_size) return 10; // HT_LEFT
-            else if (x >= window.innerWidth - border_size - 1) return 11; // HT_RIGHT
-            else if (y <= border_size) return 12; // HT_TOP
-            else if (y >= window.innerHeight - border_size - 1) return 15; // HT_BOTTOM
+        // ==== add listeners =====
+        !function() {
+            // in this block, we will do
 
-            return 1; // HTCLIENT
-        }
-        browserWindow.postMessage = function(message) { chrome.webview.postMessage(message); }
-        browserWindow.postMessagePromise = function(message) {
-            if (typeof message !== 'object') throw new Error("message must be object.")
+            // A. handle drag on bar
+            // B. handle resize on border
+            // C. handle double click on bar
+            // D. handle right click on bar (context menu)
+            const corner_size = 6;
+            const border_size = 2;
 
-            return new Promise(function(resolve, reject) {
-                var id = browserWindow.generateId();
-
-                resolves[id] = resolve;
-                message.__callback = id;
-
-                chrome.webview.postMessage(message);
-            })
-        }
-        browserWindow.onmessage = function(data) {
-
-            if (data.action == 'callback') {
-                var id = data.id;
-
-                resolves[id] && (resolves[id](data.data), delete resolves[id]);
-            }
-            else if (data.action == 'browserWindow.onWindowStateChange') windowState = data.windowState;
-            
-        }
+            var previousTime = 0;
+            var isLMouseDown = false;
 
 
-        // handle events
-        var previousPoint = { x: 0, y: 0 };
-        var previousTime = 0;
-
-        var LButtonDown = false;
-        
-
-        window.addEventListener('mousedown', function(e) {
-            var x = e.clientX;
-            var y = e.clientY;
-            var hit = browserWindow.hitTest(x, y);
-
-            if (e.button == 0) {
-
-                if (hit != 1 && allowResizable == true) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    messenger.startResize(hit);
-                    return;
-                }
-
-                var target = e.target;
-                var appRegion = getComputedStyle(target)['-webkit-app-region'];
-                if (appRegion === 'drag') {
-                    var now = Date.now();
-                    var elapsed = now - previousTime;
-                    previousTime = now;
-
-                    if (elapsed <= 300) {
-                        var target = e.target;
-                        var appRegion = getComputedStyle(target)['-webkit-app-region'];
-
-                        if (appRegion === 'drag') {
-
-                            if (windowState == 0) browserWindow.windowState = 2;
-                            else if (windowState == 2) browserWindow.windowState = 0
-
-                            e.preventDefault();
-                            e.stopImmediatePropagation();
-                            LButtonDown = false;
-
-                            return;
-                        }
-
-                    }
-
-                    previousPoint = { x: e.clientX, y: e.clientY };
-                    LButtonDown = true;
-                }
-            }
-
-            else if (hit != 1) {
-                e.preventDefault();
-
-                messenger.releaseCapture();
-
-                return;
-            }
-
-        }); // mousedown
-        window.addEventListener('mousemove', function(e) {
-
-            if (e.buttons == 0 && allowResizable == true) {
+            window.addEventListener('mousedown', function(e) {
                 var x = e.clientX;
                 var y = e.clientY;
 
-                var hit = browserWindow.hitTest(x, y);
-                var html = document.documentElement;
-
-                if (hit == 13) html.style.cursor = 'nw-resize';
-                else if (hit == 16) html.style.cursor = 'sw-resize';
-                else if (hit == 14) html.style.cursor = 'ne-resize';
-                else if (hit == 17) html.style.cursor = 'se-resize';
-                else if (hit == 10) html.style.cursor = 'w-resize';
-
-                else if (hit == 11) html.style.cursor = 'e-resize';
-                else if (hit == 12) html.style.cursor = 'n-resize';
-                else if (hit == 15) html.style.cursor = 's-resize';
-                else html.style.cursor = '';
-            }
-            
 
 
-            if ((e.buttons & 1) == 1 && LButtonDown == true) {
-                messenger.drag();
+                if (e.button == 0) {
+                    var hit = hitTest(x, y);
 
-                LButtonDown = false;
+                    if (hit == 1) {
+                        // L.mouse down on client
+                        // --C--                        
+                        // 1. the style (-webkit-app-region) of target must be 'drag'
+                        // 2. the time between the first & seconds click must smaller 300ms
+                        // 3. switch window state
 
-                e.preventDefault();
-                e.stopImmediatePropagation();
-            }
+                       
+                        // --1--
+                        var target = e.target;
+                        var appRegion = getComputedStyle(target)['-webkit-app-region'];
+                        if (appRegion !== 'drag') return;
 
-            
-        }); // mousemove
-        window.addEventListener('contextmenu', function(e) {
-            const element = e.target;
-            const appRegion = getComputedStyle(element)['-webkit-app-region'];
+                        
 
-            if (appRegion === 'drag') {
+                        // --2--
+                        var now = Date.now();
+                        var elapsed = now - previousTime;
+                        previousTime = now;
+                        isLMouseDown = true; // L.mouse is down
+
+                        if (elapsed > 300) return;
+
+                        // --3--
+                        if (windowState == winform.FormWindowState.Normal) winform.windowState = winform.FormWindowState.Maximized;
+                        else if (windowState == winform.FormWindowState.Maximized) winform.windowState = winform.FormWindowState.Normal;
+
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        isLMouseDown = false;
+
+                        return;
+                    }
+                    else if (hit != 1 && allowResizable == true) {
+                        // L.mouse down on non-client && resizing is allowed
+                        // --B--
+
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+
+                        proton.postMessage("window.startResize", hit);
+                        return;
+                    }
+
+                }
+
+                //else if (hit != 1) {
+                //    //e.preventDefault();
+                //
+                //    //messenger.releaseCapture();
+                //
+                //    return;
+                //}
+
+            }, { capture: true }); // mousedown
+            window.addEventListener('mousemove', function(e) {
+                if (e.buttons == 0 && allowResizable == true) {
+                    var x = e.clientX;
+                    var y = e.clientY;
+
+                    var hit = hitTest(x, y);
+                    var html = document.documentElement;
+
+                    if (hit == 13) html.style.cursor = 'nw-resize';
+                    else if (hit == 16) html.style.cursor = 'sw-resize';
+                    else if (hit == 14) html.style.cursor = 'ne-resize';
+                    else if (hit == 17) html.style.cursor = 'se-resize';
+                    else if (hit == 10) html.style.cursor = 'w-resize';
+
+                    else if (hit == 11) html.style.cursor = 'e-resize';
+                    else if (hit == 12) html.style.cursor = 'n-resize';
+                    else if (hit == 15) html.style.cursor = 's-resize';
+                    else html.style.cursor = '';
+                }
+
+
+
+                if ((e.buttons & 1) == 1 && isLMouseDown == true) {
+                    // --A--
+                    // Mouse move while L.mouse is down
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    isLMouseDown = false;
+
+                    proton.postMessage("window.startDrag");
+                }
+
+            }, { capture: true }); // mousemove
+            window.addEventListener('contextmenu', function(e) {
+                // --D---
+                // 1. the style (-webkit-app-region) of target must be 'drag'
+                // 2. Chromium render have built-in zoom, A rectangle have size of (200px;100px) will take 250px;125px if window.devicePixelRatio is 1.25
+
+
+
+                // --1--
+                const element = e.target;
+                const appRegion = getComputedStyle(element)['-webkit-app-region'];
+
+                if (appRegion !== 'drag') return;
+
+                // --2--
                 /** @type DOMRect */
                 var clientRect = element.getBoundingClientRect();
-                var devicePixelRatio = window.devicePixelRatio;
+                var devicePixelRatio = window.devicePixelRatio; 
                 var rect = {
                     x: parseInt(clientRect.x * devicePixelRatio),
                     y: parseInt(clientRect.y * devicePixelRatio),
@@ -209,59 +298,57 @@ window.proton = function() {
                     height: parseInt(clientRect.height * devicePixelRatio),
                 }
 
-                messenger.setCaptionRectangle(rect);
-                messenger.openContextMenu();
-
-
                 e.preventDefault();
-                e.stopPropagation();
-            }
-        }); // contextmenu
-        webview.addEventListener('message', function(e) { browserWindow.onmessage(e.data) });
+                e.stopImmediatePropagation();
 
-        messenger.getAll().then(function(value) {
-            windowState = value.windowState;
-            borderStyle = value.borderStyle;
-            allowResizable = value.allowResizable;
+                proton.postMessage("window.setCaptionRectangle", rect);
+                proton.postMessage("window.openContextMenu");
+            }); // contextmenu
+
+
+            function hitTest(x, y) {
+
+                if (windowState == winform.FormWindowState.Maximized) return 1; // HTCLIENT
+
+                if (x <= corner_size && y <= corner_size) return 13; // HT_TOPLEFT
+                else if (x <= corner_size && y >= window.innerHeight - corner_size - 1) return 16; // HT_BOTTOMLEFT
+                else if (x >= window.innerWidth - corner_size - 1 && y <= corner_size) return 14; // HT_TOPRIGHT
+                else if (x >= window.innerWidth - corner_size - 1 && y >= window.innerHeight - corner_size - 1) return 17; // HT_BOTTOMRIGHT
+                else if (x <= border_size) return 10; // HT_LEFT
+                else if (x >= window.innerWidth - border_size - 1) return 11; // HT_RIGHT
+                else if (y <= border_size) return 12; // HT_TOP
+                else if (y >= window.innerHeight - border_size - 1) return 15; // HT_BOTTOM
+
+                return 1; // HTCLIENT
+            }
+        }();
+        proton.onMessage.addListener(function(m) {
+
+            /** @type proton.window.Message */
+            var message = m;
+            
+            if (message.action == 'window.onWindowStateChange') {
+                windowState = message.data.windowState;
+
+                winform.onWindowStateChange.dispatch();
+            }
+            
         });
 
-        return browserWindow;
+        // ======= startup =======
+        proton.postMessagePromise("window.getAll").then(function(m) {
+            text = m.text;
+            windowState = m.windowState;
+            borderStyle = m.borderStyle;
+            allowResizable = m.allowResizable;
+        })
+
+        return winform;
     }();
+
+    // startup
     
 
 
     return proton;
-
 }();
-
-
-
-
-//document.addEventListener('contextmenu', function(e) {
-//    const target = e.target;
-//    const appRegion = getComputedStyle(target)['-webkit-app-region'];
-//
-//    if (appRegion === 'drag') {
-//        console.log('2');
-//        e.preventDefault();
-//        e.stopImmediatePropagation();
-//    }
-//}); // contextmenu
-
-//function BrowserWindow() {
-//    
-//}
-////BrowserWindow.prototype = EventTarget.prototype;
-//
-//BrowserWindow.prototype = new EventTarget();
-//
-//BrowserWindow.__proto__ = EventTarget;
-//BrowserWindow.prototype.__proto__ = EventTarget.prototype;
-//
-//
-//
-//
-//
-//class BrowserWindow2 extends EventTarget {
-//
-//}

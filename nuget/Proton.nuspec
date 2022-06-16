@@ -2,28 +2,41 @@
 <package >
     <metadata>
         <id>Proton</id>
-        <version>0.0.1</version>
-        <title>Prton</title>
+        <version>0.1.0.0</version>
+        <title>Proton</title>
         <authors>X High Intell</authors>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <license type="expression">MIT</license>
         <icon>icon.png</icon>
         <description>The Proton form is written on the top of WebView2 control that enables you to embed web technologies (HTML, CSS, and JavaScript) in your native applications powered by Microsoft Edge (Chromium).</description>
-        <copyright>$copyright$</copyright>
+        <readme>README.md</readme>
+        <copyright>Copyright © 2022</copyright>
         <repository type="git" url="https://github.com/xhighintell/proton.git"/>
         <projectUrl>https://github.com/xhighintell/proton</projectUrl>
         <tags>Proton WebView2</tags>
         <dependencies>
             <group targetFramework=".NETFramework4.7.2">
-                <dependency id="Microsoft.Web.WebView2" version="1.0.1020.30" include="none" exclude="all" />
+                <dependency id="Microsoft.Web.WebView2" version="1.0.1210.39" exclude="all" />
                 <dependency id="Newtonsoft.Json" version="13.0.1" exclude="Build,Analyzers" />
             </group>
         </dependencies>
     </metadata>
     
-    <files>    
-        <file src="..\nuget\icon.png" />
-        <file src="js\Proton.d.ts" target="content" />
+    <files>
+        <file src="icon.png" />
+        <file src="README.md" />
+
+        <file src="tools\install.ps1" target="tools" />
+        
+        <file src="..\src\js\proton.js"    target="content\js" />
+        <file src="..\src\js\proton.d.ts"  target="content\js" />
+        
         <file src="..\References\Intell.dll" target="lib\net472" />
+        <file src="..\output\Proton.dll"     target="lib\net472" />
+        <file src="..\output\Proton.xml"     target="lib\net472" />
+
+
+        <file src="..\test\ExampleForm.cs"           target="content" />
+        <file src="..\test\ExampleForm.Designer.cs"  target="content" />
     </files>
 </package>

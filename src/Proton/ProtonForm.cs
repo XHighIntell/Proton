@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
@@ -13,24 +12,24 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 
 namespace Proton {
+
+    ///<summary>Represents a window or dialog box that makes up an application's user interface.</summary>
     public partial class ProtonForm : Form {
 
-
+        ///<summary>Initializes a new instance of the <seealso cref="Proton.ProtonForm"/>.</summary>
         public ProtonForm() {
-            CoreMessageHandler = new CoreMessageHandler(this);
-        }
+        }   
 
+        ///<summary>Gets the instance of WebView.</summary>
+        public WebView WebView { get; set; }
+         
 
-        ///<summary>Gets the instance of WebView2.</summary>
-        public WebView2 WebView { get; set; }
-
-        ///<summary>Gets core message handler.</summary>
-        public CoreMessageHandler CoreMessageHandler { get; private set; }
-
+        ///<summary>Gets or sets a value indicating whether the form will be transparent.</summary>
         [Category("Proton")]
-        [Description("Enable Trasparent of Proton form will prevent all childrens control from drawing.")]
+        [Description("Enable transparent of Proton form will prevent all childrens control from drawing.")]
         public bool EnableTransparent { get; set; }
 
+        ///<summary>Gets or sets a value indicating whether the form can be resized from Webview.</summary>
         [Category("Proton")]
         [Description("Allow WebView2 to resize Proton Form from dragging in corner.")]
         public bool AllowResizable { get; set; }
@@ -43,14 +42,6 @@ namespace Proton {
         protected override void OnPaintBackground(PaintEventArgs e) {
             if (this.FormBorderStyle == FormBorderStyle.None && EnableTransparent == true) return;
             base.OnPaintBackground(e);
-        }
-        protected unsafe override void OnResize(EventArgs e) {
-            if (WebView != null && WebView.CoreWebView2 != null) {
-                Messenger.onWindowStateChange(WebView, (int)this.WindowState);
-            }
-
-
-            base.OnResize(e);
         }
 
 
@@ -215,16 +206,15 @@ namespace Proton {
                         }
                     }
 
-                    if (CoreMessageHandler.Storage.CaptionRectangle.Contains(x, y) == true) {
-                        m.Result = (IntPtr)2;
-                        return;
-                        
-                    };
+                    if (WebView != null && WebView.FormMessageHandler != null) {
+                        if (WebView.FormMessageHandler.CaptionRectangle.Contains(x, y) == true) {
+                            m.Result = (IntPtr)2;
+                            return;
+                        }
+                    }
                 }
             }
             base.WndProc(ref m);
         }
-
-
     }
 }
