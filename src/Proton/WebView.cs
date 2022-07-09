@@ -54,7 +54,9 @@ namespace Proton {
 
             // 1. process message with FormMessageHandler
             // 2. dispatch MessageReceived events 
-            // 3. throw error if promise callback is not call 
+            // 3. throw error if promise callback is not call
+            //  - exception should not be thrown because users may want async task
+            //  - throw in WebView2.WebMessageReceived will be catch by WebView2, so it's pointless
 
             // --1--
             var isProcessed = FormMessageHandler.ProcessRequest(message);
@@ -64,13 +66,8 @@ namespace Proton {
             MessageReceived?.Invoke(this, new MessageReceivedEventArgs() { Message = message, Raw = e });
 
             // --3--
-            if (message.IsPromise == true && message.IsSentResponse == false) throw new Exception("SendResponse must be call for promise.");
-            
+            // if (message.IsPromise == true && message.IsSentResponse == false) throw new Exception("SendResponse must be call for promise.");            
         }
-
-
-
-
 
 
     }

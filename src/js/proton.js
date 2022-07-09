@@ -31,9 +31,19 @@ window.proton = function() {
                 this.listeners.splice(index, 1);
             }
             prototype.dispatch = function() {
-                this.listeners.forEach((callback) => {
-                    callback.apply(this.target, arguments)
-                });
+
+                // 1. dispatch event to the listeners
+                // 2. if any of the listeners return "stopPropagation", stop. This is internally used
+
+                for (var i = 0; i < this.listeners.length; i++) {
+                    var callback = this.listeners[i];
+
+                    // --1--
+                    var action = callback.apply(this.target, arguments);
+
+                    // --2--
+                    if (action == "stopPropagation") break;
+                }
             }
             prototype.hasListener = function(callback) { return this.listeners.indexOf(callback) != -1; }
             prototype.hasListeners = function() { return this.listeners.length > 0; }
@@ -331,6 +341,8 @@ window.proton = function() {
                 windowState = message.data.windowState;
 
                 winform.onWindowStateChange.dispatch();
+
+                return "stopPropagation";
             }
             
         });

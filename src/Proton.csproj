@@ -41,8 +41,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>Intell Private Key.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Intell">
@@ -93,6 +92,7 @@
     </TypeScriptCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Intell Private Key.pfx" />
     <None Include="packages.config" />
     <None Include="post-build event.cmd" />
   </ItemGroup>

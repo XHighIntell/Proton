@@ -3,6 +3,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 using Microsoft.Web.WebView2.Core;
@@ -41,21 +42,24 @@ namespace Example {
             WebView.CoreWebView2.SetVirtualHostNameToFolderMapping("local-123.com", AppDomain.CurrentDomain.BaseDirectory + "html", CoreWebView2HostResourceAccessKind.Allow);
             WebView.CoreWebView2.Navigate("http://local-123.com/portal.html");
 
-
+            WebView.WebMessageReceived += WebView_WebMessageReceived;
             WebView.MessageReceived += WebView_MessageReceived;
+
+            
+        }
+
+        private void WebView_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e) {
+
+
         }
 
         private void WebView_MessageReceived(object sender, MessageReceivedEventArgs e) {
-
 
             //WebView.PostMessage("a", new JObject() { ["x"] = 123 });
             if (e.Message.Action == "Hello") {
                 e.Message.SendResponse(new JObject() { ["message"] = "Response from C#" });
             }
-            
-            
 
-            
         }
 
 
