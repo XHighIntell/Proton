@@ -6,8 +6,8 @@
         <Nullable>disable</Nullable>
         <UseWindowsForms>true</UseWindowsForms>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <Version>1.0.0</Version>
+        <AssemblyVersion>1.0.1.0</AssemblyVersion>
+        <Version>1.0.1</Version>
         <BaseOutputPath>..\..\output\$(MSBuildProjectName)</BaseOutputPath>
         <!-- Nuget information -->
         <Title>Proton</Title>
@@ -15,6 +15,7 @@
         <Authors>X High Intell</Authors>
         <Copyright>X High Intell Copyright © 2023</Copyright>
         <PackageIcon>icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>Proton;WebView2;Windows;WindowsForms</PackageTags>
         <Description>The Proton form is written on the top of WebView2 control that enables you to embed web technologies (HTML, CSS, and JavaScript) in your native applications powered by Microsoft Edge (Chromium).</Description>
@@ -37,7 +38,7 @@
     <!-- Nuget Packer -->
     <ItemGroup>
         <None Include="..\..\icon.png" Pack="true" Visible="false" PackagePath="icon.png" />
-        
+        <None Include="README.md" Pack="true" PackagePath="\"/>
         <Content Include="wwwroot\proton.js" Pack="true" PackagePath="contentFiles\any\any\wwwroot" />
         <Content Include="wwwroot\proton.d.ts" Pack="true" PackagePath="contentFiles\any\any\wwwroot" />
         <Content Include="wwwroot\demo.html" Pack="true" PackagePath="contentFiles\any\any\wwwroot" />
