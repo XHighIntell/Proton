@@ -1,16 +1,14 @@
-# Proton Project
-src/obj
-output
+# src
 
-# Test Project
-test/obj
-test/bin
+# test
+
+# output
+output
 
 
 # Visual Studio
+bin
+obj
 .vs
 *.user
-packages
 
-# nuget
-nuget/*.nupkg

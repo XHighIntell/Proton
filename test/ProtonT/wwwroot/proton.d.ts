@@ -6,19 +6,6 @@ interface WebViewPort extends MessagePort {
     hostObjects: object;
 }
 
-type NotFunctionKeys<T> = {
-    [k in keyof T]: T[k] extends Function ? never : k
-}[keyof T];
-
-type defineProperties<T> = {
-    [K in NotFunctionKeys<T>]: {
-        get: (this: T) => T[K];
-        set: (this: T, newValue: T[K]) => void;
-    }
-}
-
-
-
 
 
 declare namespace proton {
@@ -51,7 +38,7 @@ declare namespace proton {
 
         /** Private */
         protected target: ThisParameterType<T>;
-        
+
         /** Registers an event listener callback to this event. */
         addListener(callback: T): void;
 
@@ -83,7 +70,7 @@ declare namespace proton {
 
     /** Post a message that support callback through the channel to host window. */
     export function postMessagePromise(action: string, data?: any): Promise<any>;
-    
+
 
     // ======= events ========
     /** Fires when a message is received from .Net/C# side. */
@@ -120,8 +107,8 @@ declare namespace proton.window {
     /** Gets or sets the border style of the form. */
     export var borderStyle: FormBorderStyle;
     /** Gets or sets a value indicating whether the form can be resized from Webview. */
-    export var allowResizable: boolean;    
-    
+    export var allowResizable: boolean;
+
     // ======= events ========
     export var onWindowStateChange: EventRegister<(this: proton.window) => void>;
 }
@@ -152,3 +139,10 @@ declare namespace proton {
 }
 
 
+
+type defineProperties<T> = {
+    [K in keyof T]: {
+        get: (this: T) => T[K];
+        set: (this: T, newValue: T[K]) => void;
+    }
+}

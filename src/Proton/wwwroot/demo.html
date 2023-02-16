@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="proton.js"></script>
+    <style>
+        html{height:100%}
+        body{margin:0;background:linear-gradient(180deg, black, transparent)}
+        .app-title-bar{padding:0 10px;line-height:2em;background:#3b4f81;color:#fff;font-family:system-ui;-webkit-app-region:drag;-webkit-user-drag:none}
+
+    </style>
+</head>
+<body>
+    <div class="app-title-bar">Proton Form</div>
+    <button id="btn-send">Send Message</button>
+    <video loop="" playsinline="" autoplay="" muted width="400" height="300">
+        <source src="https://rotato.netlify.app/alpha-demo/movie-hevc.mov" type='video/mp4; codecs="hvc1"'>
+        <source src="https://rotato.netlify.app/alpha-demo/movie-webm.webm" type="video/webm">
+    </video>
+
+    <script>
+        document.querySelector('#btn-send').addEventListener('click', function() {
+            proton.postMessage("hello", "asd");
+        });
+
+    </script>
+</body>
+</html>

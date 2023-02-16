@@ -1,57 +1,35 @@
-﻿using System;
-using System.Drawing;
-using System.Text;
+﻿using System.Drawing;
+using System;
 using System.Windows.Forms;
-
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.WinForms;
-using Newtonsoft.Json.Linq;
-
-using Intell.Win32;
-using System.Threading.Tasks;
 using System.ComponentModel;
+using Intell;
+using Intell.Win32;
+using System.Collections.Generic;
 
 namespace Proton {
+    public class ProtonForm : Form {
 
-    ///<summary>Represents a window or dialog box that makes up an application's user interface.</summary>
-    public partial class ProtonForm : Form {
+        internal readonly List<ProtonWebView> _webViews = new List<ProtonWebView>();
+        internal bool _enableTransparent = false;
 
-        ///<summary>Initializes a new instance of the <seealso cref="Proton.ProtonForm"/>.</summary>
-        public ProtonForm() {
-        }   
+        public ProtonForm() { }
 
-        ///<summary>Gets the instance of WebView.</summary>
-        public WebView WebView { get; set; }
-         
-
-        ///<summary>Gets or sets a value indicating whether the form will be transparent.</summary>
         [Category("Proton")]
-        [Description("Enable transparent of Proton form will prevent all childrens control from drawing.")]
-        public bool EnableTransparent { get; set; }
-
-        ///<summary>Gets or sets a value indicating whether the form can be resized from Webview.</summary>
-        [Category("Proton")]
-        [Description("Allow WebView2 to resize Proton Form from dragging in corner.")]
-        public bool AllowResizable { get; set; }
-
-
-        protected override void OnPaint(PaintEventArgs e) {
-            if (this.FormBorderStyle == FormBorderStyle.None && EnableTransparent == true) return;
-            base.OnPaint(e);
-        }
-        protected override void OnPaintBackground(PaintEventArgs e) {
-            if (this.FormBorderStyle == FormBorderStyle.None && EnableTransparent == true) return;
-            base.OnPaintBackground(e);
+        [Description("Enable Trasparent of Proton form will prevent all childrens control from drawing.")]
+        public bool EnableTransparent { 
+            get { return _enableTransparent; }
+            set {
+                if (value == true) this.FormBorderStyle = FormBorderStyle.None;
+                _enableTransparent = value;
+            }
         }
 
-
-        protected unsafe override void WndProc(ref Message m) {
-
+        protected override unsafe void WndProc(ref Message m) {
             if (m.Msg == WindowsMessages.WM_CREATE) {
                 if (this.FormBorderStyle == FormBorderStyle.None) {
                     var ws = User32.GetWindowLongA(this.Handle, -16);
                     ws |= User32.WindowStyles.WS_THICKFRAME | User32.WindowStyles.WS_SYSMENU;
-
+                    
                     //if (this.MaximizeBox == true) ws |= User32.WindowStyles.WS_MAXIMIZEBOX;
                     //else ws &= ~User32.WindowStyles.WS_MAXIMIZEBOX;
                     //
@@ -64,7 +42,7 @@ namespace Proton {
 
                     User32.SetWindowLongA(this.Handle, -16, ws);
 
-                    if (EnableTransparent == true) {
+                    if (_enableTransparent == true) {
                         var ex = User32.GetWindowLongA(this.Handle, -20);
                         User32.SetWindowLongA(this.Handle, -20, ex | User32.WindowStylesExtended.WS_EX_LAYERED);
                         User32.SetLayeredWindowAttributes(this.Handle, 0xFFFFFF, 255, 1);
@@ -75,10 +53,10 @@ namespace Proton {
                 if (this.FormBorderStyle == FormBorderStyle.None) {
                     if (m.WParam == IntPtr.Zero) {
                         //m.Result = (IntPtr)0;
-                        
+
                         //return;
                     }
-                    
+
                     m.Result = (IntPtr)1;
                     User32.DefWindowProc(m.HWnd, m.Msg, (IntPtr)1, new IntPtr(-1));
                     return;
@@ -87,20 +65,20 @@ namespace Proton {
             }
             if (m.Msg == WindowsMessages.WM_ERASEBKGND) {
 
-                if (this.FormBorderStyle == FormBorderStyle.None && EnableTransparent == true) {
+                if (this.FormBorderStyle == FormBorderStyle.None && _enableTransparent == true) {
                     m.Result = new IntPtr(1);
                     return;
                 }
             }
             if (m.Msg == WindowsMessages.WM_PAINT) {
 
-                if (this.FormBorderStyle == FormBorderStyle.None && EnableTransparent == true) {
+                if (this.FormBorderStyle == FormBorderStyle.None && _enableTransparent == true) {
                     m.Result = IntPtr.Zero;
                     return;
                 }
             }
             else if (m.Msg == WindowsMessages.WM_NCPAINT) {
-                if (this.FormBorderStyle == FormBorderStyle.None && EnableTransparent == true) return;
+                if (this.FormBorderStyle == FormBorderStyle.None && _enableTransparent == true) return;
             }
 
             if (m.Msg == WindowsMessages.WM_GETMINMAXINFO) {
@@ -156,7 +134,7 @@ namespace Proton {
 
 
             }
-            else if (m.Msg == WindowsMessages.WM_NCHITTEST) { 
+            else if (m.Msg == WindowsMessages.WM_NCHITTEST) {
                 if (this.FormBorderStyle == FormBorderStyle.None) {
                     int borderSize = 3;      // Grip size
 
@@ -206,8 +184,9 @@ namespace Proton {
                         }
                     }
 
-                    if (WebView != null && WebView.FormMessageHandler != null) {
-                        if (WebView.FormMessageHandler.CaptionRectangle.Contains(x, y) == true) {
+                    for (var i = 0; i < _webViews.Count; i++) {
+                        var webView = _webViews[i];
+                        if (webView.TitleBarRectangle.Contains(x, y) == true) {
                             m.Result = (IntPtr)2;
                             return;
                         }

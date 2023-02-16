@@ -1,3 +1,0 @@
-Proton is written on the top of WebView2 control that enables you to embed web technologies (HTML, CSS, and JavaScript) in your native applications powered by Microsoft Edge (Chromium). Proton inherited ideas from [Electron](https://www.electronjs.org/) where developers use web technologies in developing desktop applications.
-
-To learn more about package versions checkout [https://github.com/XHighIntell/Proton](https://github.com/XHighIntell/Proton)
