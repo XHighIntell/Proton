@@ -9,6 +9,7 @@ Proton is written on the top of WebView2 control that enables you to embed web t
 
 ## Supportability
 The Proton package supports the below environments:
+
 ![.NET Framework](https://img.shields.io/badge/.NET%20Framework->=%204.6-brightgreen)
 ![.NET Framework](https://img.shields.io/badge/netcoreapp3.0->=%203.0-brightgreen)
 ![.NET Framework](https://img.shields.io/badge/Microsoft.Web.WebView2->=%201.0.1020.30-brightgreen)
