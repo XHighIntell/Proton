@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "noEmitOnError": false,
+        "removeComments": false,
+        "sourceMap": false,
+        "declaration": true,
+        "target": "ES2023",
+        "lib": ["ES2022", "DOM", "WebWorker"],
+        "outDir": "../../QuickTemplate/wwwroot/static/lib/proton"
+    },
+    
+    "compileOnSave": true,
+}
