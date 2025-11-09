@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtonT", "test\ProtonT\Pro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PackageT", "test\PackageT\PackageT.csproj", "{E1F9AB40-2A74-4CCA-AF4C-AB2EAC5FE8BE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickTemplate", "src\Proton.QuickTemplate\QuickTemplate.csproj", "{CC0B2E4F-CA81-4954-945C-5EFB6EEC7F5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{E1F9AB40-2A74-4CCA-AF4C-AB2EAC5FE8BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1F9AB40-2A74-4CCA-AF4C-AB2EAC5FE8BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1F9AB40-2A74-4CCA-AF4C-AB2EAC5FE8BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC0B2E4F-CA81-4954-945C-5EFB6EEC7F5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC0B2E4F-CA81-4954-945C-5EFB6EEC7F5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC0B2E4F-CA81-4954-945C-5EFB6EEC7F5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC0B2E4F-CA81-4954-945C-5EFB6EEC7F5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,6 +45,7 @@ Global
 		{764BE1FF-4FE4-466E-9574-11E69966B1C8} = {A4E5FA11-5842-448C-8096-59DCDC47484C}
 		{6418C998-D15A-43FA-8DF5-47B4351FFF76} = {798EA0AD-33C8-4DF4-BBE3-E1E1E461A6D4}
 		{E1F9AB40-2A74-4CCA-AF4C-AB2EAC5FE8BE} = {798EA0AD-33C8-4DF4-BBE3-E1E1E461A6D4}
+		{CC0B2E4F-CA81-4954-945C-5EFB6EEC7F5E} = {A4E5FA11-5842-448C-8096-59DCDC47484C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F22FF2C-76EA-4344-8088-D47C262C29A7}

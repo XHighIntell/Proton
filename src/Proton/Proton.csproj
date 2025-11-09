@@ -1,19 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net46;net6.0-windows;netcoreapp3.0</TargetFrameworks>
+        <TargetFrameworks>net8.0-windows;net6.0-windows</TargetFrameworks>
         <ImplicitUsings>disable</ImplicitUsings>
-        <Nullable>disable</Nullable>
+        <Nullable>enable</Nullable>
+        <LangVersion>10.0</LangVersion>
         <UseWindowsForms>true</UseWindowsForms>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <AssemblyVersion>1.0.1.0</AssemblyVersion>
-        <Version>1.0.1</Version>
-        <BaseOutputPath>..\..\output\$(MSBuildProjectName)</BaseOutputPath>
+        <AssemblyVersion>1.0.6.0</AssemblyVersion>
+        <Version>1.0.6</Version>
+        <BaseOutputPath>..\..\output\$(MSBuildProjectName)</BaseOutputPath>       
+        
         <!-- Nuget information -->
         <Title>Proton</Title>
         <PackageId>Proton</PackageId>
         <Authors>X High Intell</Authors>
-        <Copyright>X High Intell Copyright © 2023</Copyright>
+        <Copyright>X High Intell Copyright © 2026</Copyright>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -26,47 +28,14 @@
 
     <ItemGroup>        
         <PackageReference Include="Intell" Version="2.0.0" allowedVersions="[2.0.0," />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1518.46" allowedVersions="[1.0.1210.39," />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.2" allowedVersions="[12.0.1," />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Update="wwwroot\proton.js" CopyToOutputDirectory="PreserveNewest" />
-        <None Update="wwwroot\proton.d.ts" CopyToOutputDirectory="PreserveNewest" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3351.48" allowedVersions="[1.0.1210.39," />
     </ItemGroup>
 
     <!-- Nuget Packer -->
     <ItemGroup>
         <None Include="..\..\icon.png" Pack="true" Visible="false" PackagePath="icon.png" />
-        <None Include="README.md" Pack="true" PackagePath="\"/>
-        <Content Include="wwwroot\proton.js" Pack="true" PackagePath="contentFiles\any\any\wwwroot" />
-        <Content Include="wwwroot\proton.d.ts" Pack="true" PackagePath="contentFiles\any\any\wwwroot" />
-        <Content Include="wwwroot\demo.html" Pack="true" PackagePath="contentFiles\any\any\wwwroot" />
+        <None Include="README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
-    <!-- Support older version of nuget -->
-    <ItemGroup>
-        <Content Include="wwwroot\proton.js" Pack="true" PackagePath="content\wwwroot" />
-        <Content Include="wwwroot\proton.d.ts" Pack="true" PackagePath="content\wwwroot" />
-        <Content Include="wwwroot\demo.html" Pack="true" PackagePath="content\wwwroot" />
-    </ItemGroup>
-    
-    <!--
-        <None Include="..\..\icon.png" Pack="true" Visible="false" PackagePath="icon.png" />
-        
-        <Content Include="nuget_pack\content\wwwroot\proton.js"   Pack="true" PackagePath="contentFiles\any\any\wwwroot" />
-        <Content Include="nuget_pack\content\wwwroot\proton.d.ts" Pack="true" PackagePath="contentFiles\any\any\wwwroot" />
-        <Content Include="nuget_pack\content\wwwroot\demo.html" Pack="true" PackagePath="contentFiles\any\any\wwwroot" />
-        
-        Support older version of nuget
-        <Content Include="nuget_pack\content\wwwroot\proton.js"   Pack="true" PackagePath="content\wwwroot" />
-        <Content Include="nuget_pack\content\wwwroot\proton.d.ts" Pack="true" PackagePath="content\wwwroot" />
-        <Content Include="nuget_pack\content\wwwroot\demo.html" Pack="true" PackagePath="content\wwwroot" />
-    -->
-    <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
-    
-    </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-        
-    </ItemGroup>
+
 </Project>
 

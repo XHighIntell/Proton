@@ -1,4 +1,4 @@
-﻿namespace PackageT {
+﻿namespace QuickTemplate {
     partial class Form1 {
         /// <summary>
         ///  Required designer variable.
