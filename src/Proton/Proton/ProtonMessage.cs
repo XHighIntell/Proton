@@ -9,23 +9,21 @@ public class ProtonMessage {
     public const string DATA_KEY_NAME = "data";
     public const string CALL_BACK_ID_KEY_NAME = "id";
 
-    bool _responseSent = false;
-
 
     public ProtonMessage(ProtonWebView webView, string webMessageAsJson) {
         this.WebView = webView;
-        this.Message = JsonNode.Parse(webMessageAsJson) as JsonObject ?? throw new Exception("Why null?");
-        this.Action = Message[ACTION_KEY_NAME]?.GetValue<string>() ?? throw new Exception("ProtonMessage.Action can't be null.");
-        this.Data = Message[DATA_KEY_NAME];
-        this.CallBackId = Message[CALL_BACK_ID_KEY_NAME]?.GetValue<string>();
+        this.Node = JsonNode.Parse(webMessageAsJson) as JsonObject ?? throw new Exception("Why null?");
+        this.Action = Node[ACTION_KEY_NAME]?.GetValue<string>() ?? throw new Exception("ProtonMessage.Action can't be null.");
+        this.Data = Node[DATA_KEY_NAME];
+        this.CallBackId = Node[CALL_BACK_ID_KEY_NAME]?.GetValue<string>();
     }
 
     #region properties
-    ///<summary>Gets the Webview2 that received the message.</summary>
+    ///<summary>Gets the <see cref="ProtonWebView"/> instance that received the message.</summary>
     public ProtonWebView WebView { get; private set; }
 
-    ///<summary>Gets the request message.</summary>
-    public JsonObject Message { get; private set; }
+    ///<summary>Gets the raw message as a <see cref="JsonObject"/>.</summary>
+    public JsonObject Node { get; private set; }
 
     ///<summary>Gets the action of the message.</summary>
     public string Action { get; private set; }
@@ -38,14 +36,16 @@ public class ProtonMessage {
 
     ///<summary>Indicates whether a response is mandatory.</summary>
     public bool ResponseRequired { get { return CallBackId != null; } }
+
+    ///<summary>Returns true if a response was sent.</summary>
+    public bool ResponseSent { get; private set; }
     #endregion
 
-    ///<summary>Send back response to JavaScript side.</summary>
-    public void SendResponse(JsonNode data) {
-        if (ResponseRequired == false) throw new Exception("This message is not a promise.");
-        if (_responseSent == true) throw new Exception("SendResponse cannot be called more than 1 time");
+    ///<summary>Send the response back to the JavaScript side.</summary>
+    public void SendResponse(JsonNode? data) {
+        if (ResponseRequired == false) throw new Exception("This message does not require a response.");
+        if (ResponseSent == true) throw new Exception("SendResponse cannot be called more than once.");
 
-        _responseSent = true;
         var message = new JsonObject() {
             [ACTION_KEY_NAME] = "callback",
             [DATA_KEY_NAME] = data,
@@ -53,6 +53,25 @@ public class ProtonMessage {
         };
 
         WebView.CoreWebView2.PostWebMessageAsJson(message.ToString());
+        ResponseSent = true;
+    }
+
+    ///<summary>send the exception response back to the JavaScript side.</summary>
+    public void SendException(Exception exception) {
+        if (ResponseRequired == false) throw new Exception("This message does not require a response.");
+        if (ResponseSent == true) throw new Exception("SendResponse cannot be called more than once.");
+
+        var message = new JsonObject() {
+            [ACTION_KEY_NAME] = "callback_exception",
+            [DATA_KEY_NAME] = new JsonObject() {
+                ["type"] = exception.GetType().Name,
+                ["message"] = exception.Message,
+            },
+            [CALL_BACK_ID_KEY_NAME] = CallBackId,
+        };
+
+        WebView.CoreWebView2.PostWebMessageAsJson(message.ToString());
+        ResponseSent = true;
     }
 
 }

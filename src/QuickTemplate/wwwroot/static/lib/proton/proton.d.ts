@@ -16,9 +16,16 @@ declare namespace proton {
         action: 'callback';
         id: string;
         data: any;
+    } | {
+        action: 'callback_exception';
+        id: string;
+        data: {
+            type: string;
+            message: string;
+        };
     };
     /** A helper interface for intellisense of postMessage. */
-    interface PostMessageMap {
+    export interface PostMessageMap {
         "example_action": {
             x: number;
         };
@@ -37,9 +44,9 @@ declare namespace proton {
         "window.openContextMenu": never;
     }
     /** A helper interface for intellisense of postMessagePromise. */
-    interface PostMessagePromiseMap {
+    export interface PostMessagePromiseMap {
         [K: string]: {
-            data: any;
+            data?: any;
             result: unknown;
         };
         "example_action": {
@@ -85,13 +92,18 @@ declare namespace proton {
         /** Determines whether this event has any listeners. */
         hasListeners(): boolean;
     }
-    /** Post a message through the channel to host window. */
+    export class RemoteError extends Error {
+        constructor(message: string, type: string);
+        /** Gets or sets Exception type. */
+        type: string;
+    }
+    /** Post a message through the channel to the host window. */
     export function postMessage<K extends keyof PostMessageMap>(action: K, data?: PostMessageMap[K]): void;
-    /** Post a message through the channel to host window. */
+    /** Post a message through the channel to the host window. */
     export function postMessage(action: string, data?: any): void;
-    /** Post a message that support callback through the channel to host window. */
+    /** Post a message that supports a callback through the channel to the host window. */
     export function postMessagePromise<M extends PostMessagePromiseMap, K extends keyof M>(action: K, data?: M[K]["data"]): Promise<M[K]["result"]>;
-    /** Post a message that support callback through the channel to host window. */
+    /** Post a message that supports a callback through the channel to the host window. */
     export function postMessagePromise(action: string, data?: any): Promise<any>;
     /** Fires when a message is received from .Net/C# side. */
     export var onMessage: EventRegister<(message: ProtonMessage) => void>;

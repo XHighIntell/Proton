@@ -12,11 +12,12 @@ namespace proton {
     export type ProtonMessage =
         { action: 'proton.init' } |
         { action: 'window.onWindowStateChange', data: { windowState: winform.FormWindowState } } |
-        { action: 'callback', id: string, data: any };
+        { action: 'callback', id: string, data: any } |
+        { action: 'callback_exception', id: string, data: { type: string, message: string } };
 
 
     /** A helper interface for intellisense of postMessage. */
-    interface PostMessageMap {
+    export interface PostMessageMap {
         "example_action": { x: number },
         "window.setText": string,
         "window.setWindowState": number,
@@ -30,9 +31,9 @@ namespace proton {
     }
 
     /** A helper interface for intellisense of postMessagePromise. */
-    interface PostMessagePromiseMap {
+    export interface PostMessagePromiseMap {
         [K: string]: {
-            data: any,
+            data?: any,
             result: unknown
         },
         "example_action": {
@@ -129,8 +130,23 @@ namespace proton {
         hasListeners() { return this.listeners.length > 0; }
     }
 
+    export class RemoteError extends Error {
+        constructor(message: string, type: string) {
+            super(message);
+            this.name = 'RemoteError';
+            this.type = type;
+        }
 
-    const postMessagePromiseResolves: { [T: string]: (value: any) => void } = {};
+        /** Gets or sets Exception type. */
+        type: string;
+    }
+
+    const postMessagePromiseResolves: {
+        [T: string]: {
+            resolve: (value: any) => void,
+            reject: (value: any) => void,
+        },
+    } = {};
 
     //#region methods
     function generateId(): string {
@@ -138,15 +154,15 @@ namespace proton {
         return Date.now().toString(36) + ('000000' + r4.toString(36)).slice(-6);
     }
 
-    /** Post a message through the channel to host window. */
+    /** Post a message through the channel to the host window. */
     export function postMessage<K extends keyof PostMessageMap>(action: K, data?: PostMessageMap[K]): void;
-    /** Post a message through the channel to host window. */
+    /** Post a message through the channel to the host window. */
     export function postMessage(action: string, data?: any): void;
     export function postMessage(action: string, data?: any) { webview.postMessage({ action: action, data: data }); }
 
-    /** Post a message that support callback through the channel to host window. */
+    /** Post a message that supports a callback through the channel to the host window. */
     export function postMessagePromise<M extends PostMessagePromiseMap, K extends keyof M>(action: K, data?: M[K]["data"]): Promise<M[K]["result"]>;
-    /** Post a message that support callback through the channel to host window. */
+    /** Post a message that supports a callback through the channel to the host window. */
     export function postMessagePromise(action: string, data?: any): Promise<any>;
     export function postMessagePromise(action: string, data?: any): Promise<any> {
         // 1. If postMessagePromise is called on the first time, create resolves object
@@ -158,7 +174,7 @@ namespace proton {
         return new Promise(function(resolve, reject) {
             // --2--
             let id = generateId();
-            postMessagePromiseResolves[id] = resolve;
+            postMessagePromiseResolves[id] = { resolve, reject }
 
             // --3--
             webview.postMessage({ action: action, id: id, data: data });
@@ -177,10 +193,17 @@ namespace proton {
 
         // 1. if action equal "callback", handle features for proton.postMessagePromise
         
-        if (message.action == 'callback') {
+        if (message.action == "callback") {
             const id = message.id;
 
-            postMessagePromiseResolves[id] && (postMessagePromiseResolves[id](message.data), delete postMessagePromiseResolves[id]);
+            postMessagePromiseResolves[id] && (postMessagePromiseResolves[id].resolve(message.data), delete postMessagePromiseResolves[id]);
+            return;
+        }
+        else if (message.action == "callback_exception") {
+            const id = message.id;
+            const error = new RemoteError(message.data.message, message.data.type);
+
+            postMessagePromiseResolves[id] && (postMessagePromiseResolves[id].reject(error), delete postMessagePromiseResolves[id]);
             return;
         }
         
@@ -274,8 +297,8 @@ namespace proton.winform {
             const corner_size = 6;
             const border_size = 2;
 
-            var previousTime = 0;
-            var isLMouseDown = false;
+            let previousTime = 0;
+            let isLMouseDown = false;
             
 
             window.addEventListener('mousedown', function(e) {

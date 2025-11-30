@@ -7,8 +7,8 @@
         <LangVersion>10.0</LangVersion>
         <UseWindowsForms>true</UseWindowsForms>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <AssemblyVersion>1.0.6.0</AssemblyVersion>
-        <Version>1.0.6</Version>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <Version>1.0.7</Version>
         <BaseOutputPath>..\..\output\$(MSBuildProjectName)</BaseOutputPath>       
         
         <!-- Nuget information -->
