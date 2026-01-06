@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Web.WebView2.Core;
 
 namespace Proton;
