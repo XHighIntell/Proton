@@ -7,9 +7,9 @@
         <LangVersion>10.0</LangVersion>
         <UseWindowsForms>true</UseWindowsForms>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
-        <Version>1.0.7</Version>
-        <BaseOutputPath>..\..\output\$(MSBuildProjectName)</BaseOutputPath>       
+        <AssemblyVersion>1.0.9.0</AssemblyVersion>
+        <Version>1.0.9</Version>
+        <BaseOutputPath>\output\$(SolutionName)\$(MSBuildProjectName)</BaseOutputPath>
         
         <!-- Nuget information -->
         <Title>Proton</Title>
@@ -24,9 +24,10 @@
         <Summary>The Proton form is written on the top of WebView2 control that enables you to embed web technologies (HTML, CSS, and JavaScript) in your native applications powered by Microsoft Edge (Chromium).</Summary>
         <RepositoryUrl>https://github.com/xhighintell/proton</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
     </PropertyGroup>
 
-    <ItemGroup>        
+    <ItemGroup>
         <PackageReference Include="Intell" Version="2.0.0" allowedVersions="[2.0.0," />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3351.48" allowedVersions="[1.0.1210.39," />
     </ItemGroup>

@@ -9,11 +9,17 @@ interface WebViewPort extends MessagePort {
 namespace proton {
     const webview = chrome.webview;
 
+    interface Exception {
+        type: string;
+        message: string;
+        stack: string;
+        errors?: Exception[];
+    }
     export type ProtonMessage =
         { action: 'proton.init' } |
         { action: 'window.onWindowStateChange', data: { windowState: winform.FormWindowState } } |
         { action: 'callback', id: string, data: any } |
-        { action: 'callback_exception', id: string, data: { type: string, message: string } };
+        { action: 'callback_exception', id: string, data: Exception };
 
 
     /** A helper interface for intellisense of postMessage. */
@@ -28,6 +34,7 @@ namespace proton {
         "window.startResize": number;
         "window.setCaptionRectangle": { x: number, y: number, width: number, height: number };
         "window.openContextMenu": never;
+        "window.close": never;
     }
 
     /** A helper interface for intellisense of postMessagePromise. */
@@ -153,6 +160,18 @@ namespace proton {
         var r4 = Math.round(Math.random() * 2176782335);
         return Date.now().toString(36) + ('000000' + r4.toString(36)).slice(-6);
     }
+    function exceptionToError(exception: Exception): Error {
+        let error: Error;
+
+        if (exception.type == 'AggregateException') 
+            error = new AggregateError(exception.errors.map(ex => exceptionToError(ex)), exception.message);
+        else
+            error = new Error(exception.message);
+        
+        error.name = exception.type
+        error.stack = exception.stack;
+        return error;
+    }
 
     /** Post a message through the channel to the host window. */
     export function postMessage<K extends keyof PostMessageMap>(action: K, data?: PostMessageMap[K]): void;
@@ -200,8 +219,9 @@ namespace proton {
             return;
         }
         else if (message.action == "callback_exception") {
+            const exception = message.data;
+            const error = exceptionToError(exception)
             const id = message.id;
-            const error = new RemoteError(message.data.message, message.data.type);
 
             postMessagePromiseResolves[id] && (postMessagePromiseResolves[id].reject(error), delete postMessagePromiseResolves[id]);
             return;
@@ -285,8 +305,13 @@ namespace proton.winform {
     export var onWindowStateChange = new proton.EventRegister<(this: typeof proton.winform) => void>(winform);
 
     // methods
+    /** Closes the form. */
+    export function close() {
+        proton.postMessage('window.close');
+    }
+
     /** This will be called when the page is loaded on ProtonWebView. */
-    export function init() {
+    function init() {
         +function() {
             // in this block, we will do
 
@@ -304,8 +329,6 @@ namespace proton.winform {
             window.addEventListener('mousedown', function(e) {
                 var x = e.clientX;
                 var y = e.clientY;
-
-
 
                 if (e.button == 0) {
                     var hit = hitTest(x, y);
@@ -355,15 +378,6 @@ namespace proton.winform {
                     }
 
                 }
-
-                //else if (hit != 1) {
-                //    //e.preventDefault();
-                //
-                //    //messenger.releaseCapture();
-                //
-                //    return;
-                //}
-
             }, { capture: true }); // mousedown
             window.addEventListener('mousemove', function(e) {
                 if (e.buttons == 0 && allowResizable == true) {
@@ -427,6 +441,23 @@ namespace proton.winform {
                 proton.postMessage("window.setCaptionRectangle", rect);
                 proton.postMessage("window.openContextMenu");
             }); // contextmenu
+            window.addEventListener('click', function(e) {
+                const minimize = (e.target as HTMLElement).closest('[data-proton-role=minimize]');
+                const maximize = (e.target as HTMLElement).closest('[data-proton-role=maximize]');
+                const close = (e.target as HTMLElement).closest('[data-proton-role=close]');
+
+                debugger;
+                if (minimize != null) proton.winform.windowState = FormWindowState.Minimized;
+                else if (maximize != null) {
+                    if (proton.winform.windowState != FormWindowState.Maximized) 
+                        proton.winform.windowState = FormWindowState.Maximized;
+                    else if (proton.winform.windowState == FormWindowState.Maximized) 
+                        proton.winform.windowState = FormWindowState.Normal;
+                }
+                else if (close != null) proton.winform.close();
+                
+                //console.log(e, e.target, e.currentTarget);
+            });
 
 
             function hitTest(x, y) {
@@ -452,24 +483,20 @@ namespace proton.winform {
             allowResizable = m.allowResizable;
         })
     }
+    
 
     // ======= startup =======
     proton.onMessage.addListener(function(message) {
-        if (message.action == 'proton.init') {
-            console.log('received proton.init');
-            winform.init();
-            return "stop"
-        }
-        else if (message.action == 'window.onWindowStateChange') {
-            windowState = message.data.windowState;
-
+        if (message.action == 'window.onWindowStateChange') {
+            _windowState = message.data.windowState;
+            
             winform.onWindowStateChange.dispatch();
 
             return "stop";
         }
-
     });
 
+    init();
 
     //document.addEventListener('DOMContentLoaded', function() {
     //    console.log('DOMContentLoaded', chrome, chrome.webview);

@@ -1,0 +1,23 @@
+{
+    "typeAcquisition": {
+        "enable": true,
+        "include": [ "jquery", "jqueryui" ]
+    },
+    "include": [
+        "**/*.ts",
+        "../../wwwroot/static/lib/intell/intell.d.ts",
+    ],
+    "references": [
+        { "path": "../centerac/tsconfig.json" }
+    ],
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "noEmitOnError": false,
+        "removeComments": false,
+        "sourceMap": false,
+        "target": "ES2022",
+        "module": "esnext",
+        "outDir": "../../wwwroot/portal",
+    },
+    "compileOnSave": true,
+}

@@ -6,10 +6,11 @@
         <Nullable>enable</Nullable>
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
+        <BaseOutputPath>E:\output\Proton\QuickTemplate</BaseOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Proton" Version="1.0.7" />
+        <PackageReference Include="Proton" Version="1.0.9" />
     </ItemGroup>
 
     <ItemGroup>

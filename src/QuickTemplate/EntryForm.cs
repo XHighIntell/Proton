@@ -3,8 +3,8 @@ using Proton;
 
 namespace QuickTemplate; 
 
-public partial class Form1: ProtonForm {
-    public Form1() {
+public partial class EntryForm: ProtonForm {
+    public EntryForm() {
         InitializeComponent();
 
         this.Text = "BorderTestForm - Proton";
@@ -27,6 +27,9 @@ public partial class Form1: ProtonForm {
         //WebView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
         webView.CoreWebView2.SetVirtualHostNameToFolderMapping("localhost.pro", AppDomain.CurrentDomain.BaseDirectory + "wwwroot", CoreWebView2HostResourceAccessKind.Allow);
         webView.CoreWebView2.Navigate("http://localhost.pro/demo.html");
+        webView.ProtonMessageReceived = async (s, ss) => {
+
+        };
 
         this.Controls.Add(webView);
     }

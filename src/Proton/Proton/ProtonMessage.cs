@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.Json.Nodes;
 
 namespace Proton;
@@ -56,22 +57,39 @@ public class ProtonMessage {
         ResponseSent = true;
     }
 
-    ///<summary>send the exception response back to the JavaScript side.</summary>
+    ///<summary>Sends the exception response back to the JavaScript side.</summary>
     public void SendException(Exception exception) {
         if (ResponseRequired == false) throw new Exception("This message does not require a response.");
         if (ResponseSent == true) throw new Exception("SendResponse cannot be called more than once.");
 
         var message = new JsonObject() {
             [ACTION_KEY_NAME] = "callback_exception",
-            [DATA_KEY_NAME] = new JsonObject() {
-                ["type"] = exception.GetType().Name,
-                ["message"] = exception.Message,
-            },
+            [DATA_KEY_NAME] = ExceptionToNode(exception),
             [CALL_BACK_ID_KEY_NAME] = CallBackId,
         };
 
         WebView.CoreWebView2.PostWebMessageAsJson(message.ToString());
         ResponseSent = true;
+    }
+
+
+    public static JsonNode ExceptionToNode(Exception exception) {
+        if (exception is AggregateException aggregateException) {
+            return new JsonObject() {
+                ["type"] = exception.GetType().Name,
+                ["message"] = exception.Message,
+                ["stack"] = exception.StackTrace,
+                ["errors"] = new JsonArray(aggregateException.InnerExceptions.Select(ex => ExceptionToNode(ex)).ToArray()),
+            };
+        }
+        else {
+            return new JsonObject() {
+                ["type"] = exception.GetType().Name,
+                ["message"] = exception.Message,
+                ["stack"] = exception.StackTrace,
+            };
+        }
+           
     }
 
 }

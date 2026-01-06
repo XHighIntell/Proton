@@ -79,6 +79,16 @@ var proton;
         var r4 = Math.round(Math.random() * 2176782335);
         return Date.now().toString(36) + ('000000' + r4.toString(36)).slice(-6);
     }
+    function exceptionToError(exception) {
+        let error;
+        if (exception.type == 'AggregateException')
+            error = new AggregateError(exception.errors.map(ex => exceptionToError(ex)), exception.message);
+        else
+            error = new Error(exception.message);
+        error.name = exception.type;
+        error.stack = exception.stack;
+        return error;
+    }
     function postMessage(action, data) { webview.postMessage({ action: action, data: data }); }
     proton.postMessage = postMessage;
     function postMessagePromise(action, data) {
@@ -109,8 +119,9 @@ var proton;
             return;
         }
         else if (message.action == "callback_exception") {
+            const exception = message.data;
+            const error = exceptionToError(exception);
             const id = message.id;
-            const error = new RemoteError(message.data.message, message.data.type);
             postMessagePromiseResolves[id] && (postMessagePromiseResolves[id].reject(error), delete postMessagePromiseResolves[id]);
             return;
         }
@@ -182,6 +193,11 @@ var proton;
         // ======= events ========
         winform.onWindowStateChange = new proton.EventRegister(winform);
         // methods
+        /** Closes the form. */
+        function close() {
+            proton.postMessage('window.close');
+        }
+        winform.close = close;
         /** This will be called when the page is loaded on ProtonWebView. */
         function init() {
             +function () {
@@ -236,13 +252,6 @@ var proton;
                             return;
                         }
                     }
-                    //else if (hit != 1) {
-                    //    //e.preventDefault();
-                    //
-                    //    //messenger.releaseCapture();
-                    //
-                    //    return;
-                    //}
                 }, { capture: true }); // mousedown
                 window.addEventListener('mousemove', function (e) {
                     if (e.buttons == 0 && winform.allowResizable == true) {
@@ -301,6 +310,23 @@ var proton;
                     proton.postMessage("window.setCaptionRectangle", rect);
                     proton.postMessage("window.openContextMenu");
                 }); // contextmenu
+                window.addEventListener('click', function (e) {
+                    const minimize = e.target.closest('[data-proton-role=minimize]');
+                    const maximize = e.target.closest('[data-proton-role=maximize]');
+                    const close = e.target.closest('[data-proton-role=close]');
+                    debugger;
+                    if (minimize != null)
+                        proton.winform.windowState = FormWindowState.Minimized;
+                    else if (maximize != null) {
+                        if (proton.winform.windowState != FormWindowState.Maximized)
+                            proton.winform.windowState = FormWindowState.Maximized;
+                        else if (proton.winform.windowState == FormWindowState.Maximized)
+                            proton.winform.windowState = FormWindowState.Normal;
+                    }
+                    else if (close != null)
+                        proton.winform.close();
+                    //console.log(e, e.target, e.currentTarget);
+                });
                 function hitTest(x, y) {
                     if (winform.windowState == winform.FormWindowState.Maximized)
                         return 1; // HTCLIENT
@@ -330,20 +356,15 @@ var proton;
                 winform.allowResizable = m.allowResizable;
             });
         }
-        winform.init = init;
         // ======= startup =======
         proton.onMessage.addListener(function (message) {
-            if (message.action == 'proton.init') {
-                console.log('received proton.init');
-                winform.init();
-                return "stop";
-            }
-            else if (message.action == 'window.onWindowStateChange') {
-                winform.windowState = message.data.windowState;
+            if (message.action == 'window.onWindowStateChange') {
+                _windowState = message.data.windowState;
                 winform.onWindowStateChange.dispatch();
                 return "stop";
             }
         });
+        init();
         //document.addEventListener('DOMContentLoaded', function() {
         //    console.log('DOMContentLoaded', chrome, chrome.webview);
         //});

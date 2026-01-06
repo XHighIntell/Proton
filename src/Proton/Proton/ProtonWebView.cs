@@ -31,8 +31,11 @@ public class ProtonWebView: WebView2 {
             protonForm._webViews.Add(this);
         }
 
+        _ownerForm.Resize += (sender, e) => {
+            PostProtonMessage("window.onWindowStateChange", new JsonObject { ["windowState"] = (int)_ownerForm.WindowState });
+        };
         WebMessageReceived += (sender, e) => { onWebMessageReceived(e); };
-        NavigationCompleted += (sender, e) => { onNavigationCompleted(); };
+        NavigationCompleted += (sender, e) => { };
     }
 
     
@@ -78,9 +81,7 @@ public class ProtonWebView: WebView2 {
     #endregion
 
     
-    void onNavigationCompleted() {
-        PostProtonMessage("proton.init", 2);
-    }
+
     async void onWebMessageReceived(CoreWebView2WebMessageReceivedEventArgs e) {
         // 1. Process internal messages without invoking events if the message is classified as internal
         var message = new ProtonMessage(this, e.WebMessageAsJson);
@@ -112,7 +113,7 @@ public class ProtonWebView: WebView2 {
             });
             return true;
         }
-        else if (action == "window.setText") { 
+        else if (action == "window.setText") {
             _ownerForm.Text = data?.GetValue<string>() ?? "";
             return true;
         }
@@ -156,7 +157,9 @@ public class ProtonWebView: WebView2 {
 
             return true;
         }
-        
+        else if (action == "window.close") { Form.Close(); return true; }
+
+
 
         return false;
     }

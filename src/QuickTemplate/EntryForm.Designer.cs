@@ -1,5 +1,5 @@
 ﻿namespace QuickTemplate {
-    partial class Form1 {
+    partial class EntryForm {
         /// <summary>
         ///  Required designer variable.
         /// </summary>
