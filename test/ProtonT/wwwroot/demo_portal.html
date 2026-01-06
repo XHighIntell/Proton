@@ -3,17 +3,39 @@
 <html>
 <head>
     <meta charset="utf-8" />
+    <link rel="icon" href="data:,">
     <title></title>
     <script src="proton.js"></script>
     <style>
         html{height:100%}
         body{margin:0;background:linear-gradient(180deg, black, transparent)}
-        .app-title-bar{padding:0 10px;line-height:2em;background:#3b4f81;color:#fff;font-family:system-ui;-webkit-app-region:drag;-webkit-user-drag:none}
-
+        .app-title-bar{display:flex;height:2em;line-height:2em;background:#3b4f81;color:#fff;font-family:system-ui;-webkit-app-region:drag;-webkit-user-drag:none}
+        .app-title-bar>.icon{}
+        .app-title-bar>.title{flex:1 1 auto;padding:0 10px;pointer-events:none}
+        .app-title-bar>.app-title-actions{display:flex}
+        .app-title-bar>.app-title-actions>div{display:flex;justify-content:center;aspect-ratio:1.4/1;font-size:.75em}
+        .app-title-bar>.app-title-actions>.minimize{}
+        .app-title-bar>.app-title-actions>.minimize::before{content:"ꟷ"}
+        .app-title-bar>.app-title-actions>.minimize:hover{background:#ffffff45}
+        .app-title-bar>.app-title-actions>.maximize{}
+        .app-title-bar>.app-title-actions>.maximize::before{content:"⃣"}
+        .app-title-bar>.app-title-actions>.maximize:hover{background:#ffffff45}
+        .app-title-bar>.app-title-actions>.close{}
+        .app-title-bar>.app-title-actions>.close::before{content:"╳"}
+        .app-title-bar>.app-title-actions>.close:hover{background:#e81123;cursor:pointer}
     </style>
 </head>
 <body>
-    <div class="app-title-bar">Proton Form</div>
+    <div class="app-title-bar" data-proton-role="app-title-bar">
+        <div class="icon"></div>
+        <span class="title">Proton</span>
+        <div class="app-title-actions">
+            <div class="minimize" data-proton-role="minimize"></div>
+            <div class="maximize" data-proton-role="maximize"></div>
+            <div class="close" data-proton-role="close"></div>
+        </div>
+    </div>
+
     <button id="btn-send">Send Message</button>
     <video loop="" playsinline="" autoplay="" muted width="400" height="300">
         <source src="https://rotato.netlify.app/alpha-demo/movie-hevc.mov" type='video/mp4; codecs="hvc1"'>
@@ -22,7 +44,9 @@
 
     <script>
         document.querySelector('#btn-send').addEventListener('click', function() {
-            proton.postMessage("hello", "asd");
+            console.log('123');
+            proton.postMessagePromise("hello", "asd");
+
         });
 
     </script>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -7,9 +7,11 @@ using Microsoft.Web.WebView2.WinForms;
 
 using Intell.Win32;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 
 namespace Proton;
 
+public delegate Task ProtonMessageReceivedEventHandler(ProtonWebView sender, ProtonMessageReceivedEventArgs e);
 
 public class ProtonWebView: WebView2 {
 
@@ -29,13 +31,17 @@ public class ProtonWebView: WebView2 {
             protonForm._webViews.Add(this);
         }
 
+        _ownerForm.Resize += (sender, e) => {
+            PostProtonMessage("window.onWindowStateChange", new JsonObject { ["windowState"] = (int)_ownerForm.WindowState });
+        };
         WebMessageReceived += (sender, e) => { onWebMessageReceived(e); };
-        NavigationCompleted += (sender, e) => { onNavigationCompleted(); };
+        NavigationCompleted += (sender, e) => { };
     }
 
     
+
     ///<summary>Occurs when a <see cref="ProtonMessage"/> is received from.</summary>
-    public event EventHandler<ProtonMessageReceivedEventArgs>? ProtonMessageReceived;
+    public ProtonMessageReceivedEventHandler? ProtonMessageReceived;
 
     #region properties
     public Form Form {
@@ -55,7 +61,6 @@ public class ProtonWebView: WebView2 {
     #endregion
 
     #region Methods
-
     ///<summary>Send a message using Proton. On the JavaScript side, use 'proton.onMessage.addListener' to handle incoming messages.</summary>
     ///<param name="action">The name of the message.</param>
     public void PostProtonMessage(string action) {
@@ -75,21 +80,23 @@ public class ProtonWebView: WebView2 {
     }
     #endregion
 
-    void onNavigationCompleted() {
-        PostProtonMessage("proton.init", 2);
-    }
-    void onWebMessageReceived(CoreWebView2WebMessageReceivedEventArgs e) {
-        // 1. process internal message
-        // 2. do not invoke events if the message is an internal message
+    
 
-        // --1--
+    async void onWebMessageReceived(CoreWebView2WebMessageReceivedEventArgs e) {
+        // 1. Process internal messages without invoking events if the message is classified as internal
         var message = new ProtonMessage(this, e.WebMessageAsJson);
-        if (processFormMessage(message) == true) return;
-        
-        ProtonMessageReceived?.Invoke(this, new ProtonMessageReceivedEventArgs() {
-            Message = message,
-            Raw = e,
-        });
+
+        try {
+            // --1--
+            if (processFormMessage(message) == true) return;
+            if (ProtonMessageReceived != null) await ProtonMessageReceived(this, new ProtonMessageReceivedEventArgs(message, e));
+
+            if (message.ResponseRequired == true && message.ResponseSent == false) 
+                message.SendException(new Exception($@"Backend did not return a response for action: '{message.Action}'. (ProtonWebView)"));
+        }
+        catch (Exception ex) {
+            message.SendException(ex);
+        }
     }
     bool processFormMessage(ProtonMessage message) {
         var action = message.Action;
@@ -106,8 +113,8 @@ public class ProtonWebView: WebView2 {
             });
             return true;
         }
-        else if (action == "window.setText") { 
-            _ownerForm.Text = data.GetValue<string>();
+        else if (action == "window.setText") {
+            _ownerForm.Text = data?.GetValue<string>() ?? "";
             return true;
         }
         else if (action == "window.setWindowState") {
@@ -150,7 +157,9 @@ public class ProtonWebView: WebView2 {
 
             return true;
         }
-        
+        else if (action == "window.close") { Form.Close(); return true; }
+
+
 
         return false;
     }

@@ -1,26 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <BaseOutputPath>..\..\output\$(MSBuildProjectName)</BaseOutputPath>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net6.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <BaseOutputPath>..\..\output\$(MSBuildProjectName)</BaseOutputPath>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Proton\Proton.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="wwwroot\demo_portal.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="wwwroot\proton.d.ts">
-      <PackagePath>wwwroot\proton.d.ts</PackagePath>
-      <Pack>true</Pack>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Proton\Proton.csproj" />
+    </ItemGroup>
 
 </Project>

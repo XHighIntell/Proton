@@ -5,8 +5,8 @@
         "removeComments": false,
         "sourceMap": false,
         "declaration": true,
-        "target": "ES2023",
-        "lib": ["ES2022", "DOM", "WebWorker"],
+        "target": "ES2022",
+        "lib": ["ES2023", "DOM", "WebWorker"],
         "outDir": "../../QuickTemplate/wwwroot/static/lib/proton"
     },
     

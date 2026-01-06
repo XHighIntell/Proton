@@ -1,0 +1,24 @@
+{
+    "typeAcquisition": {
+        "enable": true,
+        "include": [ "jquery", "jqueryui", "wicg-file-system-access"]
+    },
+    "include": [
+        "**/*.ts",
+        "../../wwwroot/static/lib/intell/intell.d.ts",
+        "../../wwwroot/static/lib/proton/proton.d.ts",
+    ],
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "noEmitOnError": false,
+        "removeComments": false,
+        "sourceMap": false,
+        "declaration": false,
+        "target": "ES2022",
+        //"lib": [""],
+        "module": "amd",
+        "composite": true,
+        "outFile": "../../wwwroot/static/js/_project-name_.js",
+    },
+    "compileOnSave": true,
+}
