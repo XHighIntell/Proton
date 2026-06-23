@@ -7,7 +7,6 @@
         "declaration": true,
         "target": "ES2022",
         "lib": ["ES2023", "DOM", "WebWorker"],
-        "outDir": "../../QuickTemplate/wwwroot/static/lib/proton"
     },
     
     "compileOnSave": true,

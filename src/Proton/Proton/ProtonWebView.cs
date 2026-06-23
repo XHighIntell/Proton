@@ -89,14 +89,32 @@ public class ProtonWebView: WebView2 {
         try {
             // --1--
             if (processFormMessage(message) == true) return;
+            if (processPlatformMessage(message) == true) return;
             if (ProtonMessageReceived != null) await ProtonMessageReceived(this, new ProtonMessageReceivedEventArgs(message, e));
 
             if (message.ResponseRequired == true && message.ResponseSent == false) 
                 message.SendException(new Exception($@"Backend did not return a response for action: '{message.Action}'. (ProtonWebView)"));
         }
         catch (Exception ex) {
-            message.SendException(ex);
+            if (message.ResponseRequired == true)
+                message.SendException(ex);
+            else throw;
         }
+    }
+
+    bool processPlatformMessage(ProtonMessage message) {
+        var action = message.Action;
+        var data = message.Data;
+
+        if (action == "proton.getPlatform") {
+            message.SendResponse(new JsonObject() {
+                // If running on MAUI, features related to non-context area, resizing, and the menu bar are removed.
+                ["isMAUI"] = false, 
+            });
+            return true;
+        }
+
+        return false;
     }
     bool processFormMessage(ProtonMessage message) {
         var action = message.Action;

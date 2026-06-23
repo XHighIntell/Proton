@@ -6,6 +6,12 @@ interface WebViewPort extends MessagePort {
     hostObjects: object;
 }
 
+/** Only available in MAUI. */
+declare var HybridWebView: {
+    /** Only allow string. */
+    SendRawMessage(message: string);
+}
+
 namespace proton {
     const webview = chrome.webview;
 
@@ -15,12 +21,6 @@ namespace proton {
         stack: string;
         errors?: Exception[];
     }
-    export type ProtonMessage =
-        { action: 'proton.init' } |
-        { action: 'window.onWindowStateChange', data: { windowState: winform.FormWindowState } } |
-        { action: 'callback', id: string, data: any } |
-        { action: 'callback_exception', id: string, data: Exception };
-
 
     /** A helper interface for intellisense of postMessage. */
     export interface PostMessageMap {
@@ -40,12 +40,13 @@ namespace proton {
     /** A helper interface for intellisense of postMessagePromise. */
     export interface PostMessagePromiseMap {
         [K: string]: {
-            data?: any,
-            result: unknown
+            data?: any;
+            result: unknown;
         },
-        "example_action": {
-            data: string,
-            result: { x: number, y: number }
+        "proton.getPlatform": {
+            result: {
+                isMAUI: boolean;
+            }
         },
         "window.getAll": {
             data: never;
@@ -57,6 +58,21 @@ namespace proton {
             };
         },
     }
+
+    /** A helper interface for intellisense of onMessage. */
+    export interface ProtonMessageMap {
+        'example': { data: any }
+    }
+
+    export type ProtonMessage =
+        { action: 'window.onWindowStateChange', data: { windowState: winform.FormWindowState } } |
+        { action: 'callback', id: string, data: any } |
+        { action: 'callback_exception', id: string, data: Exception } |
+        {
+            [K in keyof ProtonMessageMap]: {
+                action: K;
+            } & (ProtonMessageMap[K] extends object ? ProtonMessageMap[K] : {})
+        }[keyof ProtonMessageMap];
 
 
     interface EventRegisterOption {
@@ -173,11 +189,17 @@ namespace proton {
         return error;
     }
 
+    /** Posts a raw message through the channel to the host window. */
+    export function postMessageRaw(message: object) {
+        if (window.HybridWebView) HybridWebView.SendRawMessage(JSON.stringify(message));
+        else webview.postMessage(message);
+    }
+
     /** Post a message through the channel to the host window. */
     export function postMessage<K extends keyof PostMessageMap>(action: K, data?: PostMessageMap[K]): void;
     /** Post a message through the channel to the host window. */
     export function postMessage(action: string, data?: any): void;
-    export function postMessage(action: string, data?: any) { webview.postMessage({ action: action, data: data }); }
+    export function postMessage(action: string, data?: any) { postMessageRaw({ action: action, data: data }) }
 
     /** Post a message that supports a callback through the channel to the host window. */
     export function postMessagePromise<M extends PostMessagePromiseMap, K extends keyof M>(action: K, data?: M[K]["data"]): Promise<M[K]["result"]>;
@@ -196,22 +218,26 @@ namespace proton {
             postMessagePromiseResolves[id] = { resolve, reject }
 
             // --3--
-            webview.postMessage({ action: action, id: id, data: data });
+            postMessageRaw({ action: action, id: id, data: data });
         });
     }
     //#endregion
 
     // ======= events ========
-    /** Fires when a message is received from .Net/C# side. */
+    /** Occurs when a message is received from .Net side. */
     export var onMessage = new proton.EventRegister<(message: ProtonMessage) => void>();
     
+    
+    // Listens to message from .NET side. Supports WebView2, HybridWebView
 
-    // add listeners
-    webview.addEventListener('message', function(e) {
-        var message = e.data as ProtonMessage;
-
+    if (window.HybridWebView != null)
+        window.addEventListener('HybridWebViewMessageReceived', (e: CustomEvent<{ message: string }>) => firstHandleMessage(JSON.parse(e.detail.message)));
+    else webview.addEventListener('message', e => firstHandleMessage(e.data));
+    
+    
+    function firstHandleMessage(message: ProtonMessage) {
         // 1. if action equal "callback", handle features for proton.postMessagePromise
-        
+
         if (message.action == "callback") {
             const id = message.id;
 
@@ -226,9 +252,9 @@ namespace proton {
             postMessagePromiseResolves[id] && (postMessagePromiseResolves[id].reject(error), delete postMessagePromiseResolves[id]);
             return;
         }
-        
+
         proton.onMessage.dispatch(message);
-    });
+    }
 }
 
 namespace proton.winform {
@@ -247,6 +273,8 @@ namespace proton.winform {
         SizableToolWindow = 6,
     }
 
+    /** Gets a value indicating whether the backend is running on MAUI. */
+    export declare let isMAUI: boolean; let _isMAUI: boolean;
 
     /** Gets or sets the window title. */
     export declare let text: string; let _text: string;
@@ -262,6 +290,10 @@ namespace proton.winform {
 
     
     let properties: defineProperties<typeof proton.winform> = {
+        isMAUI: {
+            get: function() { return _isMAUI },
+            set: function() { throw new Error("The 'isMAUI' property is readonly.") },
+        },
         text: {
             get: function() { return _text },
             set: function(newValue) {
@@ -306,12 +338,21 @@ namespace proton.winform {
 
     // methods
     /** Closes the form. */
-    export function close() {
-        proton.postMessage('window.close');
-    }
+    export function close() { proton.postMessage('window.close'); }
 
-    /** This will be called when the page is loaded on ProtonWebView. */
-    function init() {
+    /** Executed when the page finishes loading. */
+    async function init() {
+        // exits if webview is HybridWebView
+        if (window.HybridWebView != null) return;
+
+        const response = await proton.postMessagePromise("proton.getPlatform");
+        _isMAUI = response.isMAUI;
+
+        document.body.classList.toggle('MAUI', isMAUI == true);
+
+        if (isMAUI == true) return;
+        
+
         +function() {
             // in this block, we will do
 
@@ -446,7 +487,7 @@ namespace proton.winform {
                 const maximize = (e.target as HTMLElement).closest('[data-proton-role=maximize]');
                 const close = (e.target as HTMLElement).closest('[data-proton-role=close]');
 
-                debugger;
+                
                 if (minimize != null) proton.winform.windowState = FormWindowState.Minimized;
                 else if (maximize != null) {
                     if (proton.winform.windowState != FormWindowState.Maximized) 

@@ -1,0 +1,25 @@
+{
+    "root": true,
+    "dependentFileProviders": {
+        "add": {
+            "fileToFile": {
+                "add": {
+                    // "intell.declaration.ts" : ["intell.ts"],
+                    "package-lock.json" : ["package.json"]
+                }
+            },
+            "extensionToExtension": {
+                "add": {
+                    ".js": [ ".ts" ],
+                    ".d.ts": [ ".ts" ],
+                    ".js.map": [ ".ts" ]
+                }
+            },
+            "pathSegment": {
+                "add": { 
+                    ".*": [".ts", ".cs"]
+                }
+            }
+        }
+    }
+}

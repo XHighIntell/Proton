@@ -7,10 +7,10 @@
         <LangVersion>10.0</LangVersion>
         <UseWindowsForms>true</UseWindowsForms>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <AssemblyVersion>1.0.9.0</AssemblyVersion>
-        <Version>1.0.9</Version>
+        <AssemblyVersion>1.0.10.0</AssemblyVersion>
+        <Version>1.0.10</Version>
         <BaseOutputPath>\output\$(SolutionName)\$(MSBuildProjectName)</BaseOutputPath>
-        
+
         <!-- Nuget information -->
         <Title>Proton</Title>
         <PackageId>Proton</PackageId>

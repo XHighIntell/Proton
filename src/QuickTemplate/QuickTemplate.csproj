@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -6,17 +6,20 @@
         <Nullable>enable</Nullable>
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
-        <BaseOutputPath>E:\output\Proton\QuickTemplate</BaseOutputPath>
+        <BaseOutputPath>\output\Proton\QuickTemplate</BaseOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Proton" Version="1.0.9" />
+        <PackageReference Include="Proton" Version="1.0.10" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="wwwroot\**\**">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        <None Include="wwwroot\**\*" CopyToOutputDirectory="PreserveNewest"/>
+		<None Include="..\Proton\wwwroot\proton.js" Link="wwwroot\static\lib\proton\proton.js" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      
     </ItemGroup>
 
 </Project>

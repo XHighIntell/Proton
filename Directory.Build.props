@@ -1,0 +1,16 @@
+<Project>
+    <PropertyGroup>
+		
+		<!-- Note for BaseIntermediateOutputPath:
+		BaseIntermediateOutputPath defines the location for intermediate build artifacts (obj folder).
+		BaseIntermediateOutputPath does not support relative path, so we need to get drive root (Ex: "E:\").
+		-->
+		<DirectoryRoot>$([System.IO.Path]::GetPathRoot($(SolutionDir)))</DirectoryRoot>
+		<BaseIntermediateOutputPath>$(DirectoryRoot)output\$(SolutionName)\$(MSBuildProjectName)\obj\</BaseIntermediateOutputPath>
+		
+		<!-- Unknow
+		<MSBuildProjectExtensionsPath>E:\output\$(SolutionName)\$(MSBuildProjectName)\obj\</MSBuildProjectExtensionsPath>
+        -->
+        
+    </PropertyGroup>
+</Project>
